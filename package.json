@@ -1,0 +1,23 @@
+{
+  "author": "Abdishakur Hussein",
+  "name": "sdet-challenge",
+  "version": "1.0.0",
+  "description": "Polaris SDET Take Home Challenge",
+  "main": "index.js",
+  "scripts": {
+    "test:main": "cross-env TEST_ENV=main npx playwright test",
+    "test:buggy": "cross-env TEST_ENV=buggy npx playwright test",
+    "test": "npm run test:main",
+    "report": "npx playwright show-report"
+  },
+  "keywords": [],
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.59.1",
+    "@types/node": "^25.6.2",
+    "cross-env": "^7.0.3"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2"
+  }
+}
