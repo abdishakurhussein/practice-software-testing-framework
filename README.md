@@ -1,8 +1,18 @@
-# Polaris SDET Take Home Coding Challenge README - By Abdishakur Hussein
+# Practice Software Testing Automation Framework - By Abdishakur Hussein
 
 ## Overview
 
-This project contains an automated UI and API test framework designed for the Polaris SDET Take Home Coding Challenge.
+This repository contains a Playwright and TypeScript automation framework designed to validate the functionality of the Practice Software Testing application through both UI and API automation.
+
+The framework demonstrates modern automation engineering practices including:
+
+* Playwright UI automation
+* Playwright API testing
+* Page Object Model (POM) architecture
+* Environment-based configuration
+* Reusable test components
+* Positive and negative scenario validation
+* Defect identification across stable and buggy environments
 
 The framework validates functionality across two environments:
 
@@ -14,12 +24,12 @@ https://practicesoftwaretesting.com/
 
 https://with-bugs.practicesoftwaretesting.com/
 
-The objective of this challenge was to:
+The project was designed to:
 
-* Automate the provided user stories
-* Validate both happy-path and negative scenarios
-* Identify intentional defects in the buggy environment
-* Produce a maintainable and scalable Playwright framework using TypeScript
+* Demonstrate scalable automation framework design using Playwright and TypeScript
+* Validate key customer journeys through UI and API testing
+* Compare application behaviour between stable and intentionally buggy environments
+* Showcase maintainable test architecture and automation best practices
 
 ---
 
@@ -110,13 +120,17 @@ One persistence-related filtering scenario was marked as `fixme` because the iss
 
 ---
 
-# Tech Stack
+# Key Features
 
-* Playwright
+* Playwright UI Automation
+* Playwright API Testing
 * TypeScript
-* Node.js
-* dotenv
-* Playwright HTML Reporter
+* Page Object Model (POM)
+* Environment Configuration
+* Reusable Test Architecture
+* Stable Locator Strategy
+* HTML Reporting
+* Positive and Negative Test Coverage
 
 ---
 
