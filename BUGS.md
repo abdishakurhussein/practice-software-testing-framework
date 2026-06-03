@@ -1,4 +1,20 @@
-# Polaris SDET Assignment – Bug Tracking Notes
+# Defect Tracking Report
+
+## Overview
+
+This document contains defects identified during automated and exploratory testing of the Practice Software Testing application across both the main and intentionally buggy environments.
+
+The defects below were discovered while validating product discovery, authentication, cart management, checkout and filtering functionality through Playwright UI automation and API testing.
+
+Each defect includes:
+
+* Environment impacted
+* Related functional area
+* Reproduction steps
+* Expected behaviour
+* Actual behaviour
+* Technical observations
+* Business impact
 
 ## Bug 1: Home navigation routes to Contact page
 
