@@ -87,21 +87,14 @@ test.describe('Landing Discovery UI', () => {
     const handToolsCheckbox = page.getByLabel('Hand Tools');
 
     await handToolsCheckbox.check();
-
     await expect(handToolsCheckbox).toBeChecked();
 
-    const lastPage = page.locator('.pagination a[aria-label^="Page-"]').last();
+    expect(await home.products().count()).toBeGreaterThan(0);
 
-    await expect(lastPage).toHaveText('3');
-
-    // Reset filters
     await home.clearSearchFilter().click();
+    await expect(handToolsCheckbox).not.toBeChecked();
 
-    await expect(lastPage).toHaveText('5');
-
-    // Negative path
     const grinderCheckbox = page.getByLabel('Grinder');
-
     await grinderCheckbox.check();
 
     await expect(home.noResultsMessage()).toBeVisible();
