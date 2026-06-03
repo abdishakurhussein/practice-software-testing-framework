@@ -1,8 +1,8 @@
 {
   "author": "Abdishakur Hussein",
-  "name": "sdet-challenge",
+  "name": "practice-software-testing-framework",
   "version": "1.0.0",
-  "description": "Polaris SDET Take Home Challenge",
+  "description": "Playwright and TypeScript UI/API automation framework for Practice Software Testing",
   "main": "index.js",
   "scripts": {
     "test:main": "cross-env TEST_ENV=main npx playwright test",
