@@ -1,0 +1,37 @@
+name: Product List Diagnostic
+
+on: workflow_dispatch
+
+permissions:
+  contents: read
+
+jobs:
+  product-list:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      BASE_URL: https://practicesoftwaretesting.com
+      API_URL: https://api.practicesoftwaretesting.com
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+
+      - name: Run View Product List only
+        run: npm run test:main -- tests/UI/1-landing-discovery-ui.spec.ts --grep 'View Product List$' --workers=1 --retries=0 --reporter=list
+
+      - name: Upload failure screenshot
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: product-list-screenshot
+          path: test-results/**/test-failed-*.png
+          if-no-files-found: warn
+          retention-days: 3
