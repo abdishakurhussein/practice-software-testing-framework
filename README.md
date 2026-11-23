@@ -233,4 +233,16 @@ BUGS.md
 * Checkout earns a browser journey because it crosses the cart, sign-in, payment and order history. The test matches the invoice generated in that run rather than accepting an existing invoice.
 * Catalogue and authentication get focused API checks so failures can be isolated without repeating the whole UI journey.
 * The buggy environment is used for defect demonstrations. See [BUGS.md](BUGS.md) for exploratory findings and user impact.
-* CI runs a read-only catalogue API smoke check on the main demo environment. It does not submit purchases or run intentional defect scenarios. The public demo is an external dependency; CI uploads diagnostics when the smoke check fails.
+
+## GitHub Actions
+
+The workflow runs the seven Playwright API tests on pushes to `main` and manual runs on `main`. Pull requests run only the three public catalogue API checks and do not need credentials. The full API job reads the demo account from the `USER_EMAIL` and `USER_PASSWORD` repository secrets. It does not install a browser or submit purchases.
+
+The browser suite is verified locally. A single-test diagnostic on a GitHub-hosted runner captured a Cloudflare human-verification page instead of the public storefront. The API calls still succeeded, so CI runs the API layer only; the UI tests remain available locally.
+
+```bash
+npm run test:main -- tests/API --retries=0
+npm run test:main -- tests/UI --grep-invert @purchase --retries=0
+```
+
+To run the full local suite, including the journey that creates a demo order, use `npm run test:main`.

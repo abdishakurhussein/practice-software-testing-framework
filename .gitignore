@@ -5,6 +5,7 @@ node_modules/
 !.env.example
 /test-results/
 /playwright-report/
+/ci-product-list/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/

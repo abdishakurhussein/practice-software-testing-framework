@@ -1,4 +1,4 @@
-name: Playwright CI
+name: Playwright API CI
 
 on:
   push:
@@ -11,10 +11,10 @@ permissions:
   contents: read
 
 jobs:
-  tests:
+  api-tests:
     if: github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     env:
       BASE_URL: https://practicesoftwaretesting.com
       API_URL: https://api.practicesoftwaretesting.com
@@ -33,20 +33,9 @@ jobs:
         if: github.event_name == 'pull_request'
         run: npm run test:main -- tests/API/1-product-discovery-api.spec.ts --reporter=list --retries=0
 
-      - name: Install Chromium
+      - name: Run API suite on main pushes and manual runs
         if: github.event_name != 'pull_request'
-        run: npx playwright install --with-deps chromium
-
-      - name: Run regression without purchase on pushes
-        if: github.event_name == 'push'
         env:
           USER_EMAIL: ${{ secrets.USER_EMAIL }}
           USER_PASSWORD: ${{ secrets.USER_PASSWORD }}
-        run: npm run test:main -- --grep-invert '@purchase' --reporter=list --retries=0
-
-      - name: Run full suite on manual dispatch
-        if: github.event_name == 'workflow_dispatch'
-        env:
-          USER_EMAIL: ${{ secrets.USER_EMAIL }}
-          USER_PASSWORD: ${{ secrets.USER_PASSWORD }}
-        run: npm run test:main -- --reporter=list --retries=0
+        run: npm run test:main -- tests/API --reporter=list --retries=0
