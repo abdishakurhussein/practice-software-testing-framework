@@ -1,0 +1,52 @@
+name: Playwright CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    if: github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      BASE_URL: https://practicesoftwaretesting.com
+      API_URL: https://api.practicesoftwaretesting.com
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Run public API smoke tests on pull requests
+        if: github.event_name == 'pull_request'
+        run: npm run test:main -- tests/API/1-product-discovery-api.spec.ts --reporter=list --retries=0
+
+      - name: Install Chromium
+        if: github.event_name != 'pull_request'
+        run: npx playwright install --with-deps chromium
+
+      - name: Run regression without purchase on pushes
+        if: github.event_name == 'push'
+        env:
+          USER_EMAIL: ${{ secrets.USER_EMAIL }}
+          USER_PASSWORD: ${{ secrets.USER_PASSWORD }}
+        run: npm run test:main -- --grep-invert '@purchase' --reporter=list --retries=0
+
+      - name: Run full suite on manual dispatch
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          USER_EMAIL: ${{ secrets.USER_EMAIL }}
+          USER_PASSWORD: ${{ secrets.USER_PASSWORD }}
+        run: npm run test:main -- --reporter=list --retries=0

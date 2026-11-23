@@ -13,7 +13,7 @@ test.describe('User Story 5: Login', () => {
         await login.goto();
         await login.login(config.userEmail, config.userPassword);
 
-        await expect(page.getByText('Jack Howe')).toBeVisible();
+        await expect(page.getByText(config.userDisplayName, { exact: true })).toBeVisible();
         await expect(page.getByRole('heading', { name: /my account/i })).toBeVisible();
     });
 
@@ -40,7 +40,7 @@ test.describe('User Story 5: Login', () => {
 
         await page.getByRole('link', { name: /contact|contakt/i }).click();
 
-        await page.getByText(/user data not found|jack howe/i).click();
+        await page.locator('[data-test="nav-menu"]').click();
         await page.getByRole('link', { name: /^My account$/i }).click();
 
         await expect(page.getByRole('heading', { name: /my account/i })).toBeVisible();

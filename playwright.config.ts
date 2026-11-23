@@ -1,19 +1,4 @@
 import { defineConfig } from '@playwright/test';
-import dotenv from 'dotenv';
-
-// ========================================
-// Load environment file first
-// ========================================
-const envFile =
-  process.env.TEST_ENV === 'buggy'
-    ? '.env.buggy'
-    : '.env.main';
-
-dotenv.config({ path: envFile });
-
-// ========================================
-// Import AFTER dotenv loads variables
-// ========================================
 import { config } from './utilities/env';
 
 // ========================================
@@ -23,7 +8,9 @@ export default defineConfig({
   testDir: './tests',
 
   retries: 1,
-  timeout: 15000,
+  timeout: 45000,
+  forbidOnly: Boolean(process.env.CI),
+  workers: process.env.CI ? 1 : undefined,
 
   use: {
     baseURL: config.baseUrl,

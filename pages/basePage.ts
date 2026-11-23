@@ -36,7 +36,6 @@ export class basePage {
 
     async clickNavHome() {
         await this.navHome.click();
-        await this.page.waitForLoadState('networkidle');
     }
 
     /**

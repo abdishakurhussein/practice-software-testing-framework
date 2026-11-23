@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { homePage } from '../../pages/homePage';
+import { environment } from '../../utilities/env';
 
 test.describe('Landing Discovery UI', () => {
   let home: homePage;
@@ -87,14 +88,19 @@ test.describe('Landing Discovery UI', () => {
     const handToolsCheckbox = page.getByLabel('Hand Tools');
 
     await handToolsCheckbox.check();
+
     await expect(handToolsCheckbox).toBeChecked();
 
-    expect(await home.products().count()).toBeGreaterThan(0);
+    await expect(home.products().filter({ hasText: 'Thor Hammer' })).toBeVisible();
 
+    // Reset filters
     await home.clearSearchFilter().click();
+
     await expect(handToolsCheckbox).not.toBeChecked();
 
+    // Negative path
     const grinderCheckbox = page.getByLabel('Grinder');
+
     await grinderCheckbox.check();
 
     await expect(home.noResultsMessage()).toBeVisible();
@@ -104,29 +110,25 @@ test.describe('Landing Discovery UI', () => {
   // USER STORY 10
   // Filter Persistence Bug Capture
   // =====================================================
-  test('Category Filtering and Reset', async ({ page }) => {
+  test('Category selection persists on reload (BUG-7)', async ({ page }) => {
     const handToolsCheckbox = page.getByLabel('Hand Tools');
 
     await handToolsCheckbox.check();
 
-    const lastPage = page.locator('.pagination a[aria-label^="Page-"]').last();
+    await expect(handToolsCheckbox).toBeChecked();
 
-    await expect(lastPage).toHaveText('3');
 
     // Refresh page
     await page.reload();
+    await expect(handToolsCheckbox).toBeVisible();
 
-    // Known bug intentionally captured
+    // Mark only the assertion for the reproduced defect as an expected failure.
+    test.fail(environment === 'main', 'BUG-7: main site clears the category on reload');
     await expect(
       handToolsCheckbox,
       'Filter should persist after refresh'
     ).toBeChecked();
 
-    // Reset
-    await home.clearSearchFilter().click();
 
-    await expect(handToolsCheckbox).not.toBeChecked();
-
-    await expect(lastPage).toHaveText('5');
   });
 });

@@ -1,26 +1,19 @@
 import { Page, Locator, expect } from '@playwright/test';
 import { basePage } from './basePage';
+import { billingAddress } from '../utilities/testData';
 
 export class checkoutPage extends basePage {
-  // =========================
-  // CART / SUMMARY
-  // =========================
+
   readonly cartItemRows: Locator;
   readonly cartItemName: Locator;
   readonly cartItemQuantity: Locator;
   readonly cartRemoveButton: Locator;
   readonly cartTotal: Locator;
 
-  // =========================
-  // STEP BUTTONS
-  // =========================
   readonly proceedToSignIn: Locator;
   readonly proceedToAddress: Locator;
   readonly proceedToCheckout: Locator;
 
-  // =========================
-  // BILLING ADDRESS
-  // =========================
   readonly countryDropdown: Locator;
   readonly postalCodeInput: Locator;
   readonly houseNumberInput: Locator;
@@ -28,112 +21,86 @@ export class checkoutPage extends basePage {
   readonly cityInput: Locator;
   readonly stateInput: Locator;
 
-  // =========================
-  // PAYMENT
-  // =========================
   readonly paymentMethod: Locator;
   readonly bankNameInput: Locator;
   readonly accountNameInput: Locator;
   readonly accountNumberInput: Locator;
+  readonly checkPaymentOrderButton: Locator;
   readonly confirmOrderButton: Locator;
 
-  // =========================
-  // CONFIRMATION
-  // =========================
   readonly successBanner: Locator;
   readonly orderConfirmationText: Locator;
 
   constructor(page: Page) {
     super(page);
-
-    // =========================
-    // CART
-    // =========================
+    
     this.cartItemRows = page.locator('.product');
     this.cartItemName = page.locator('[data-test="product-title"]');
     this.cartItemQuantity = page.locator('[data-test="product-quantity"]');
     this.cartRemoveButton = page.locator('a.btn.btn-danger');
     this.cartTotal = page.locator('[data-test="cart-total"]');
-
-    // =========================
-    // STEP BUTTONS
-    // =========================
+    
     this.proceedToSignIn = page.locator('[data-test="proceed-1"]');
     this.proceedToAddress = page.locator('[data-test="proceed-2"]');
     this.proceedToCheckout = page.locator('[data-test="proceed-3"]');
 
-    // =========================
-    // BILLING ADDRESS
-    // =========================
     this.countryDropdown = page.locator('[data-test="country"]');
     this.postalCodeInput = page.locator('[data-test="postal_code"]');
     this.houseNumberInput = page.locator('[data-test="house_number"]');
     this.streetInput = page.locator('[data-test="street"]');
     this.cityInput = page.locator('[data-test="city"]');
     this.stateInput = page.locator('[data-test="state"]');
-
-    // =========================
-    // PAYMENT
-    // =========================
+    
     this.paymentMethod = page.locator('[data-test="payment-method"]');
     this.bankNameInput = page.locator('[data-test="bank_name"]');
     this.accountNameInput = page.locator('[data-test="account_name"]');
     this.accountNumberInput = page.locator('[data-test="account_number"]');
-    this.confirmOrderButton = page.locator('[data-test="finish"]');
+    this.checkPaymentOrderButton = page.getByRole('button', { name: 'Check payment' });
+    this.confirmOrderButton = page.getByRole('button', { name: 'Confirm' });
 
-    // =========================
-    // CONFIRMATION
-    // =========================
-    this.successBanner = page.locator('.alert-success');
-    this.orderConfirmationText = page.locator('text=Thanks for your order');
+    this.successBanner = page.getByText('Payment was successful', { exact: true });
+    this.orderConfirmationText = page.getByText(/Thanks for your order/i);
   }
 
   async goto() {
     await this.cartIcon.click();
-    await this.page.waitForLoadState('networkidle');
+    await expect(this.cartItemName.first()).toBeVisible();
 }
 
-  // =====================================================
-  // STEP 1
-  // =====================================================
+  
   async proceedFromCart() {
     await expect(this.proceedToSignIn).toBeVisible();
     await this.proceedToSignIn.click();
   }
 
-  // =====================================================
-  // STEP 2
-  // =====================================================
+  
   async proceedFromLogin() {
     await expect(this.proceedToAddress).toBeVisible();
     await this.proceedToAddress.click();
   }
 
-  // =====================================================
-  // BILLING ADDRESS
-  // =====================================================
   async fillBillingAddress() {
-    await expect(this.countryDropdown).toBeVisible();
+  const { countryCode, postalCode, houseNumber, street, city, state } =
+    billingAddress;
 
-    await this.countryDropdown.selectOption('GB');
-    await this.postalCodeInput.fill('SW1A1AA');
-    await this.houseNumberInput.fill('10');
-    await this.streetInput.fill('Downing Street');
-    await this.cityInput.fill('London');
-    await this.stateInput.fill('London');
-  }
+  await this.countryDropdown.selectOption({ value: countryCode });
+  await this.postalCodeInput.fill(postalCode);
+  await this.houseNumberInput.fill(houseNumber);
+  await this.houseNumberInput.press('Tab');
 
-  // =====================================================
-  // SUBMIT ADDRESS
-  // =====================================================
+  await expect(this.streetInput).toHaveValue(street);
+  await expect(this.cityInput).toHaveValue(city);
+
+  await this.stateInput.fill(state);
+  await this.stateInput.press('Tab');
+  await expect(this.stateInput).toHaveValue(state);
+}
+
   async completeCheckout() {
     await expect(this.proceedToCheckout).toBeEnabled();
     await this.proceedToCheckout.click();
   }
 
-  // =====================================================
-  // PAYMENT
-  // =====================================================
     async fillPaymentDetails() {
     await expect(this.paymentMethod).toBeVisible();
 
@@ -148,15 +115,28 @@ export class checkoutPage extends basePage {
     await this.accountNumberInput.fill('12345678');
   }
 
+  async checkPaymentOrder() {
+    await expect(this.checkPaymentOrderButton).toBeEnabled();
+    await this.checkPaymentOrderButton.click();
+  }
+  
+  async confirmOrder(): Promise<void> {
+  const [response] = await Promise.all([
+    this.page.waitForResponse(
+      (r) =>
+        r.request().method() === 'POST' &&
+        new URL(r.url()).pathname.endsWith('/invoices'),
+    ),
+    this.confirmOrderButton.click(),
+  ]);
 
-  async confirmOrder() {
-    await expect(this.confirmOrderButton).toBeEnabled();
-    await this.confirmOrderButton.click();
+    if (!response.ok()) {
+      throw new Error(
+        `Order submission failed (${response.status()}): ${await response.text()}`,
+      );
+    }
   }
 
-  // =====================================================
-  // FULL FLOW
-  // =====================================================
   async completeFullCheckoutFlow() {
     await this.proceedFromCart();
     await this.proceedFromLogin();
@@ -165,17 +145,22 @@ export class checkoutPage extends basePage {
     await this.completeCheckout();
 
     await this.fillPaymentDetails();
+    await this.checkPaymentOrder();
     await this.confirmOrder();
   }
 
-  // =====================================================
-  // ASSERTIONS
-  // =====================================================
-  async verifyOrderSuccess() {
-    await expect(
-      this.successBanner.or(this.orderConfirmationText)
-    ).toBeVisible();
+  async invoiceReference(): Promise<string> {
+  await expect(this.orderConfirmationText).toContainText(/INV-[\w-]+/i);
+
+  const reference = (await this.orderConfirmationText.innerText())
+    .match(/INV-[\w-]+/i)?.[0];
+
+  if (!reference) {
+    throw new Error('Order confirmation did not contain an invoice reference.');
   }
+
+  return reference;
+}
 
   async verifyCartHasItems() {
     await expect(this.cartItemRows.first()).toBeVisible();

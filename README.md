@@ -2,17 +2,7 @@
 
 ## Overview
 
-This repository contains a Playwright and TypeScript automation framework designed to validate the functionality of the Practice Software Testing application through both UI and API automation.
-
-The framework demonstrates modern automation engineering practices including:
-
-* Playwright UI automation
-* Playwright API testing
-* Page Object Model (POM) architecture
-* Environment-based configuration
-* Reusable test components
-* Positive and negative scenario validation
-* Defect identification across stable and buggy environments
+This project is a Playwright and TypeScript automation framework for the Practice Software Testing demo shop, covering catalogue discovery, authentication, cart management, checkout, and invoice history through UI and API tests.
 
 The framework validates functionality across two environments:
 
@@ -24,12 +14,12 @@ https://practicesoftwaretesting.com/
 
 https://with-bugs.practicesoftwaretesting.com/
 
-The project was designed to:
+This framework aims to:
 
-* Demonstrate scalable automation framework design using Playwright and TypeScript
-* Validate key customer journeys through UI and API testing
-* Compare application behaviour between stable and intentionally buggy environments
-* Showcase maintainable test architecture and automation best practices
+* Automate the provided user stories
+* Validate both happy-path and negative scenarios
+* Identify intentional defects in the buggy environment
+* Produce a maintainable and scalable Playwright framework using TypeScript
 
 ---
 
@@ -47,8 +37,8 @@ Example for `.env.main`:
 ```env
 BASE_URL=https://practicesoftwaretesting.com
 API_URL=https://api.practicesoftwaretesting.com
-USER_EMAIL=customer2@practicesoftwaretesting.com
-USER_PASSWORD=welcome01
+USER_EMAIL=<demo-account-email>
+USER_PASSWORD=<demo-account-password>
 ```
 
 Example for `.env.buggy`:
@@ -56,8 +46,8 @@ Example for `.env.buggy`:
 ```env
 BASE_URL=https://with-bugs.practicesoftwaretesting.com
 API_URL=https://api.practicesoftwaretesting.com
-USER_EMAIL=customer2@practicesoftwaretesting.com
-USER_PASSWORD=welcome01
+USER_EMAIL=<demo-account-email>
+USER_PASSWORD=<demo-account-password>
 ```
 
 ---
@@ -110,27 +100,23 @@ The user stories were grouped by functional area so that related journeys sit to
 - `tests/API/2-login-api.spec.ts`
   - Supports authentication coverage for valid and invalid login scenarios
 
-- `tests/API/3-cart-checkout-api.spec.ts`
-  - Supports cart, checkout, invoice/order access, and authenticated endpoint validation
+- `tests/API/3-invoice-access-api.spec.ts`
+  - Checks authenticated invoice listing and rejection of unauthenticated requests
 
 The buggy environment intentionally exposes application defects.  
 Where genuine defects were identified, tests were allowed to fail naturally and the issues were documented rather than bypassed through automation workarounds.
 
-One persistence-related filtering scenario was marked as `fixme` because the issue exists in the main application itself.
+The main run still exercises the documented filter-persistence defect as an expected failure.
 
 ---
 
-# Key Features
+# Tech Stack
 
-* Playwright UI Automation
-* Playwright API Testing
+* Playwright
 * TypeScript
-* Page Object Model (POM)
-* Environment Configuration
-* Reusable Test Architecture
-* Stable Locator Strategy
-* HTML Reporting
-* Positive and Negative Test Coverage
+* Node.js
+* dotenv
+* Playwright HTML Reporter
 
 ---
 
@@ -155,7 +141,6 @@ tests/
   ├── UI/
   └── API/
 utilities/
-data/
 ```
 
 ---
@@ -165,17 +150,28 @@ data/
 Install dependencies:
 
 ```bash
-npm install
+npm ci
+npx playwright install chromium
 ```
 
 ---
 
 # Quick Start
 
+Run these commands from the repository root with Node.js 22. Use only
+demo credentials and synthetic checkout data. Do not commit `.env.main`
+or `.env.buggy`; only `.env.example` belongs in Git.
+
 ## Run Main Environment Tests
 
 ```bash
 npm run test:main
+```
+
+For a run that does not create a demo order:
+
+```bash
+npm run test:main -- --grep-invert @purchase
 ```
 
 ## Run Buggy Environment Tests
@@ -221,9 +217,7 @@ The API suite validates backend functionality supporting the UI journeys, includ
 
 ---
 
-# Known Issues
-
-Known defects discovered during execution against the buggy environment are documented in:
+# Known defects discovered during execution against the buggy environment are documented in:
 
 ```text
 BUGS.md
@@ -233,6 +227,10 @@ BUGS.md
 
 # Notes
 
-* The main environment is expected to pass except for documented application defects.
+* The main environment treats the reproduced filter persistence issue (BUG-7) as an expected failure. If it starts passing, Playwright flags the unexpected pass so the annotation can be removed.
 * The buggy environment intentionally contains defects and is expected to produce failing UI scenarios.
 * API coverage was designed to complement UI coverage rather than duplicate every browser workflow.
+* Checkout earns a browser journey because it crosses the cart, sign-in, payment and order history. The test matches the invoice generated in that run rather than accepting an existing invoice.
+* Catalogue and authentication get focused API checks so failures can be isolated without repeating the whole UI journey.
+* The buggy environment is used for defect demonstrations. See [BUGS.md](BUGS.md) for exploratory findings and user impact.
+* CI runs a read-only catalogue API smoke check on the main demo environment. It does not submit purchases or run intentional defect scenarios. The public demo is an external dependency; CI uploads diagnostics when the smoke check fails.

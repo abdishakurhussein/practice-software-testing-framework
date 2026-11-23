@@ -17,10 +17,12 @@ export class homePage extends basePage {
         return this.page.locator('.card:not(.skeleton)');
     }
     clickNext() {
-        return this.page.locator('a[aria-label="Next"]');
+        return this.page.getByRole('button', { name: 'Next', exact: true })
+            .or(this.page.getByRole('link', { name: 'Next', exact: true }));
     }
         clickPrevious() {
-        return this.page.locator('a[aria-label="Previous"]');
+        return this.page.getByRole('button', { name: 'Previous', exact: true })
+            .or(this.page.getByRole('link', { name: 'Previous', exact: true }));
         }
 
     
@@ -47,6 +49,15 @@ export class homePage extends basePage {
 
     firstProductCard() {
     return this.products().first();
+    }
+
+    async openProduct(name: string) {
+        await this.goto();
+        await this.searchBar().fill(name);
+        await this.searchButton().click();
+        await this.products().filter({
+            has: this.page.getByText(name, { exact: true })
+        }).click();
     }
 
     // These methods "reach inside" the first card

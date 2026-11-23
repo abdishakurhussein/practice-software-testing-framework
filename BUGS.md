@@ -1,20 +1,4 @@
-# Defect Tracking Report
-
-## Overview
-
-This document contains defects identified during automated and exploratory testing of the Practice Software Testing application across both the main and intentionally buggy environments.
-
-The defects below were discovered while validating product discovery, authentication, cart management, checkout and filtering functionality through Playwright UI automation and API testing.
-
-Each defect includes:
-
-* Environment impacted
-* Related functional area
-* Reproduction steps
-* Expected behaviour
-* Actual behaviour
-* Technical observations
-* Business impact
+# Practice Software Testing Automation Framework – Bug Tracking Notes
 
 ## Bug 1: Home navigation routes to Contact page
 
@@ -230,3 +214,38 @@ Received: unchecked
 ### Impact
 
 Users lose their selected filter state after refreshing the page, which breaks the expected browsing/filtering experience.
+
+## Bug 8: UK postcode lookup autofills an unexpected billing address
+
+Environment: Main site  
+Related User Story: User Story 8 – Complete Checkout
+
+### Steps to Reproduce
+
+1. Log in as a registered user and add a product to the cart.
+2. Proceed to the Billing Address step.
+3. Select the United Kingdom.
+4. Enter postcode `SW1A 1AA` and house number `10`.
+5. Wait for the lookup and inspect the Street and City fields.
+
+### Expected Behaviour
+
+The form should populate the street and city that match the postcode and house number. If no match is found, it should say so clearly.
+
+### Actual Behaviour
+
+The form populated Street with `Oscar Squares` and City with `Charliechester` instead of the expected Downing Street address in London.
+
+### Technical Observation
+
+During automated checkout, `POST /invoices` returned `422` with billing-country and, on a separate attempt, billing-state validation errors. The available evidence does not establish that the lookup caused both errors.
+
+A separate network capture shows `GET /postcode-lookup` returning `422` for the partial postcode `SW1A 1`. It does not show that the full postcode was rejected.
+
+### Impact
+
+Users may need to correct the suggested billing address before proceeding. If the submitted address fails validation, the order cannot be completed.
+
+### Automation Handling
+
+The purchase test waits for address autofill before entering State and checks the invoice response at submission. This surfaces billing validation errors directly rather than reporting a timeout while waiting for the order confirmation.

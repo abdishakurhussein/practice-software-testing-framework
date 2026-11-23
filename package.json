@@ -1,8 +1,8 @@
 {
   "author": "Abdishakur Hussein",
-  "name": "practice-software-testing-framework",
+  "name": "practice-software-testing-automation",
   "version": "1.0.0",
-  "description": "Playwright and TypeScript UI/API automation framework for Practice Software Testing",
+  "description": "Practice software testing automation",
   "main": "index.js",
   "scripts": {
     "test:main": "cross-env TEST_ENV=main npx playwright test",
@@ -13,7 +13,7 @@
   "keywords": [],
   "license": "ISC",
   "devDependencies": {
-    "@playwright/test": "^1.59.1",
+    "@playwright/test": "^1.65.1",
     "@types/node": "^25.6.2",
     "cross-env": "^7.0.3"
   },
